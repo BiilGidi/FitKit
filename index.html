@@ -277,12 +277,14 @@
     width:100%; height:100%; display:flex; align-items:center; justify-content:center;
   }
   .item-photo-fallback svg{ width:30%; height:30%; opacity:0.55; }
-  .item-delete{
-    position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%;
+  .item-edit, .item-delete{
+    position:absolute; top:8px; width:30px; height:30px; border-radius:50%;
     border:1px solid rgba(255,255,255,0.5); background:rgba(21,24,26,0.55); color:#fff;
     display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(2px);
   }
-  .item-delete svg{ width:15px; height:15px; }
+  .item-edit{ left:8px; }
+  .item-delete{ right:8px; }
+  .item-edit svg, .item-delete svg{ width:14px; height:14px; }
   .item-delete.confirming{
     width:auto; padding:0 12px; border-radius:999px; background:var(--danger);
     font-size:0.72rem; font-weight:700; gap:5px; border-color:var(--danger);
@@ -323,6 +325,8 @@
   .field input[type="text"]:focus{ border-color:var(--accent); }
   .field-error{ color:var(--danger); font-size:0.78rem; margin-top:6px; display:none; }
   .field-error.show{ display:block; }
+  .field-hint{ color:var(--accent); font-size:0.78rem; margin-top:8px; display:none; }
+  .field-hint.show{ display:block; }
 
   .photo-drop{
     border:1.5px dashed var(--line-strong); border-radius:var(--radius-m); aspect-ratio:4/3;
@@ -358,6 +362,8 @@
   .builder-layout{ display:grid; grid-template-columns:minmax(0,1fr); gap:22px; }
   .builder-layout > *{ min-width:0; }
   @media (min-width:900px){ .builder-layout{ grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); align-items:start; } }
+  .builder-col{ display:flex; flex-direction:column; gap:18px; min-width:0; }
+  #generate-btn svg{ width:17px; height:17px; }
 
   .stage{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-l);
@@ -391,7 +397,9 @@
     position:absolute; left:7px; right:34px; bottom:7px; background:rgba(21,24,26,0.6); color:#fff;
     font-size:0.66rem; font-weight:700; padding:3px 8px; border-radius:999px; letter-spacing:0.02em;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:fit-content; max-width:calc(100% - 41px);
+    display:flex; align-items:center; gap:4px;
   }
+  .stage-tile .tile-tag svg{ width:10px; height:10px; flex:none; opacity:0.9; }
   .stage-tile .tile-remove{
     position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%;
     background:rgba(21,24,26,0.55); color:#fff; border:none; display:flex; align-items:center;
@@ -414,7 +422,7 @@
 
   .controls{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-l);
-    padding:22px 22px 20px; margin-top:18px; display:flex; flex-direction:column; gap:20px;
+    padding:22px 22px 20px; display:flex; flex-direction:column; gap:20px;
   }
   .control-row{ display:flex; flex-direction:column; gap:8px; }
   .control-label{ display:flex; justify-content:space-between; align-items:baseline; font-size:0.86rem; font-weight:600; }
@@ -513,6 +521,8 @@
     main{ padding-bottom:64px; }
   }
 </style>
+
+
 </head>
 <body>
 <svg class="visually-hidden" aria-hidden="true">
@@ -532,6 +542,9 @@
   <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 6l12 12M18 6 6 18"/>
   </symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+  </symbol>
   <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
     <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/>
@@ -542,6 +555,14 @@
   </symbol>
   <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M5 13l4.5 4.5L19 7"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+  </symbol>
+  <symbol id="icon-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 6h3.5c2 0 3 .8 4.2 2.6"/><path d="M3 18h3.5c2 0 3-.8 4.2-2.6"/>
+    <path d="M14 6h3.3c1.5 0 2.3.5 3.2 1.6M14 18h3.3c1.5 0 2.3-.5 3.2-1.6"/>
+    <path d="M18 4.2 21 7l-3 2.6M18 19.8 21 17l-3-2.6"/>
   </symbol>
   <symbol id="icon-shirt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 4 4 7l2.2 2.6L8 8.4V20h8V8.4l1.8 1.2L20 7l-4-3-2 1.4a4 4 0 0 1-4 0L8 4Z"/>
@@ -599,32 +620,34 @@
     <!-- BUILD -->
     <section class="screen" id="screen-build" data-screen="build">
       <div class="screen-head">
-        <div><p class="eyebrow">Build</p><h1>Build an outfit</h1></div>
+        <div><p class="eyebrow">Build</p><h1>Get an outfit</h1></div>
         <div class="screen-head-actions">
           <button class="btn btn-ghost" id="clear-outfit-btn" disabled>Clear</button>
           <button class="btn btn-primary" id="save-outfit-btn" disabled>Save outfit</button>
         </div>
       </div>
       <div class="builder-layout">
-        <div>
-          <div class="stage" id="stage"></div>
+        <div class="builder-col">
           <div class="controls">
             <div class="control-row">
-              <div class="control-label"><span>Style</span><span class="val" id="style-val">50</span></div>
-              <input type="range" min="0" max="100" value="50" id="style-slider" aria-label="Style preference">
-              <div class="scale-labels"><span>Sporty</span><span>Casual</span><span>Street</span><span>Smart</span></div>
+              <div class="control-label"><span>What's the vibe?</span></div>
+              <div class="segmented" id="vibe-field"></div>
             </div>
             <div class="control-row">
               <div class="control-label"><span>Colour mood</span><span class="val" id="colour-val">50</span></div>
               <input type="range" min="0" max="100" value="50" id="colour-slider" aria-label="Colour preference">
               <div class="scale-labels"><span>Safe</span><span>Experimental</span></div>
             </div>
-            <p class="controls-note" id="controls-note">Add a few wardrobe pieces to see these shape your matches.</p>
+            <button class="btn btn-primary" id="generate-btn" style="width:100%; justify-content:center;" disabled>
+              <svg viewBox="0 0 24 24"><use href="#icon-shuffle"/></svg>Generate outfit
+            </button>
+            <p class="controls-note" id="controls-note">Pieces you pick yourself stay put when you regenerate — everything else reshuffles.</p>
           </div>
+          <div class="stage" id="stage"></div>
         </div>
         <div class="picker-panel">
-          <h3>Item picker</h3>
-          <p class="sub" id="picker-sub">Compatible pieces will show up here as you build.</p>
+          <h3>Build around a specific piece</h3>
+          <p class="sub" id="picker-sub">Pick anything you already know you want to wear — Generate will build the rest around it.</p>
           <div class="chip-row" id="picker-chips" role="group" aria-label="Filter picker by category"></div>
           <div id="picker-body"></div>
         </div>
@@ -679,6 +702,7 @@
         <div class="field">
           <span class="field-label">Colour</span>
           <div class="swatch-grid" id="colour-field"></div>
+          <p class="field-hint" id="colour-hint">Guessed from your photo — tap a different swatch if that's not right.</p>
         </div>
         <div class="field">
           <span class="field-label">Style</span>
@@ -733,6 +757,11 @@
   ];
   var COLOUR_HEX = {};
   COLOURS.forEach(function(c){ COLOUR_HEX[c.id] = c.hex; });
+  var PALETTE_HSL = {};
+  COLOURS.forEach(function(c){
+    var rgb = hexToRgb(c.hex);
+    PALETTE_HSL[c.id] = rgbToHsl(rgb.r, rgb.g, rgb.b);
+  });
 
   var STYLES = [
     { id:"sporty", label:"Sporty", pos:10 },
@@ -752,6 +781,9 @@
     items: [],
     outfits: [],
     outfit: { top:null, layer:null, bottom:null, shoes:null, accessory:null },
+    locked: { top:false, layer:false, bottom:false, shoes:false, accessory:false },
+    vibe: null,
+    hasGenerated: false,
     currentCategory: "all",
     builderCategory: "all",
     stylePreference: 50,
@@ -763,6 +795,7 @@
   var pendingOutfitDeletes = new Map();
   var newItemPhotoBlob = null;
   var newItemDraft = { category:"top", colour:"black", style:"casual" };
+  var colourManuallySet = false;   // becomes true the moment the user taps a swatch themselves
 
   /* ============ Utilities ============ */
   function genId(prefix){ return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8); }
@@ -859,14 +892,107 @@
         canvas.width = w; canvas.height = h;
         var ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h);
+        var colourGuess = null;
+        try { colourGuess = detectDominantColour(img); } catch (err) { colourGuess = null; }
         URL.revokeObjectURL(objUrl);
         canvas.toBlob(function(blob){
-          if (blob) resolve(blob); else reject(new Error("encode-failed"));
+          if (blob) resolve({ blob: blob, colourGuess: colourGuess }); else reject(new Error("encode-failed"));
         }, "image/jpeg", 0.82);
       };
       img.onerror = function(){ URL.revokeObjectURL(objUrl); reject(new Error("load-failed")); };
       img.src = objUrl;
     });
+  }
+
+  /* ---- Plain-JS colour detection (no ML): small canvas + histogram + palette match ---- */
+  function hexToRgb(hex){
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    if (!m) return { r:0, g:0, b:0 };
+    return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+  }
+  function rgbToHsl(r, g, b){
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h = 0, s = 0, l = (max + min) / 2;
+    var d = max - min;
+    if (d !== 0){
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max){
+        case r: h = 60 * (((g - b) / d) % 6); break;
+        case g: h = 60 * ((b - r) / d + 2); break;
+        case b: h = 60 * ((r - g) / d + 4); break;
+      }
+      if (h < 0) h += 360;
+    }
+    return { h: h, s: s, l: l };
+  }
+  function matchColourFromSample(r, g, b){
+    var hsl = rgbToHsl(r, g, b);
+    if (hsl.l < 0.16) return "black";
+    if (hsl.l > 0.92 && hsl.s < 0.18) return "white";
+    if (hsl.s < 0.14) return "grey";
+    var best = null, bestDist = Infinity;
+    Object.keys(PALETTE_HSL).forEach(function(id){
+      if (id === "black" || id === "white" || id === "grey") return;
+      var ref = PALETTE_HSL[id];
+      var hueDist = Math.abs(hsl.h - ref.h);
+      if (hueDist > 180) hueDist = 360 - hueDist;
+      var dist = (hueDist / 180) + Math.abs(hsl.s - ref.s) * 0.6 + Math.abs(hsl.l - ref.l) * 0.6;
+      if (dist < bestDist){ bestDist = dist; best = id; }
+    });
+    return best || "grey";
+  }
+  function detectDominantColour(img){
+    var size = 48;
+    var canvas = document.createElement("canvas");
+    canvas.width = size; canvas.height = size;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, size, size);
+    var data;
+    try { data = ctx.getImageData(0, 0, size, size).data; } catch (err) { return null; }
+
+    // Estimate the background colour from the four corners, then exclude pixels close to it.
+    function pixelAt(x, y){ var i = (y * size + x) * 4; return { r: data[i], g: data[i+1], b: data[i+2] }; }
+    var corners = [pixelAt(0,0), pixelAt(size-1,0), pixelAt(0,size-1), pixelAt(size-1,size-1)];
+    var bg = {
+      r: mean(corners.map(function(p){ return p.r; })),
+      g: mean(corners.map(function(p){ return p.g; })),
+      b: mean(corners.map(function(p){ return p.b; }))
+    };
+
+    function bucketPixels(excludeBg){
+      var buckets = {};
+      var kept = 0, total = 0;
+      for (var y = 0; y < size; y++){
+        for (var x = 0; x < size; x++){
+          total++;
+          var i = (y * size + x) * 4;
+          var r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+          if (a < 200) continue;
+          if (excludeBg){
+            var d = Math.sqrt(Math.pow(r - bg.r, 2) + Math.pow(g - bg.g, 2) + Math.pow(b - bg.b, 2));
+            if (d < 42) continue;
+          }
+          kept++;
+          var key = (r >> 4) + "_" + (g >> 4) + "_" + (b >> 4);
+          if (!buckets[key]) buckets[key] = { count:0, r:0, g:0, b:0 };
+          buckets[key].count++; buckets[key].r += r; buckets[key].g += g; buckets[key].b += b;
+        }
+      }
+      return { buckets: buckets, kept: kept, total: total };
+    }
+
+    var res = bucketPixels(true);
+    if (res.kept < res.total * 0.05) res = bucketPixels(false);
+
+    var topBucket = null;
+    Object.keys(res.buckets).forEach(function(key){
+      var b = res.buckets[key];
+      if (!topBucket || b.count > topBucket.count) topBucket = b;
+    });
+    if (!topBucket) return null;
+    var avgR = topBucket.r / topBucket.count, avgG = topBucket.g / topBucket.count, avgB = topBucket.b / topBucket.count;
+    return matchColourFromSample(avgR, avgG, avgB);
   }
   function getPhotoUrl(item){
     if (!item.image) return null;
@@ -1035,6 +1161,7 @@
     var confirming = pendingItemDeletes.has(item.id);
     return '<div class="item-card" data-id="' + item.id + '">' +
       '<div class="item-photo-wrap">' + photoHtml +
+      '<button class="item-edit" data-action="edit-item" data-id="' + item.id + '" aria-label="Edit ' + escapeHtml(item.name) + '"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>' +
       '<button class="item-delete' + (confirming ? ' confirming' : '') + '" data-action="delete-item" data-id="' + item.id + '" aria-label="Delete ' + escapeHtml(item.name) + '">' +
         (confirming ? 'Confirm?' : '<svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg>') +
       '</button></div>' +
@@ -1062,6 +1189,9 @@
     body.innerHTML = '<div class="wardrobe-grid">' + filtered.map(itemCardHtml).join("") + '</div>';
     body.querySelectorAll('[data-action="delete-item"]').forEach(function(btn){
       btn.addEventListener("click", function(e){ e.stopPropagation(); handleDeleteItem(btn.dataset.id); });
+    });
+    body.querySelectorAll('[data-action="edit-item"]').forEach(function(btn){
+      btn.addEventListener("click", function(e){ e.stopPropagation(); openEditModal(btn.dataset.id); });
     });
   }
 
@@ -1115,6 +1245,8 @@
       if (c.id === newItemDraft.colour) btn.innerHTML = '<svg viewBox="0 0 24 24" style="color:' + (c.id==="white"||c.id==="beige"||c.id==="yellow"?"#15181A":"#fff") + ';"><use href="#icon-check"/></svg>';
       btn.addEventListener("click", function(){
         newItemDraft.colour = c.id;
+        colourManuallySet = true;
+        document.getElementById("colour-hint").classList.remove("show");
         buildSwatches();
       });
       el.appendChild(btn);
@@ -1123,8 +1255,10 @@
   function resetAddForm(){
     document.getElementById("item-name").value = "";
     document.getElementById("name-error").classList.remove("show");
+    document.getElementById("colour-hint").classList.remove("show");
     newItemDraft = { category:"top", colour:"black", style:"casual" };
     newItemPhotoBlob = null;
+    colourManuallySet = false;
     var drop = document.getElementById("photo-drop");
     drop.classList.remove("has-photo");
     var img = drop.querySelector("img");
@@ -1134,21 +1268,62 @@
     buildSwatches();
   }
   var lastFocused = null;
+  var editingItemId = null;
+  function setAddModalMode(isEdit){
+    document.getElementById("add-modal-title").textContent = isEdit ? "Edit item" : "Add item";
+    document.querySelector('#add-item-form button[type="submit"]').innerHTML = isEdit
+      ? '<svg viewBox="0 0 24 24"><use href="#icon-check"/></svg>Save changes'
+      : '<svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Add to wardrobe';
+  }
   function openAddModal(){
     lastFocused = document.activeElement;
+    editingItemId = null;
     resetAddForm();
+    setAddModalMode(false);
+    document.getElementById("modal-add").classList.add("open");
+    setTimeout(function(){ document.getElementById("item-name").focus(); }, 30);
+  }
+  function openEditModal(id){
+    var item = state.items.find(function(i){ return i.id === id; });
+    if (!item) return;
+    lastFocused = document.activeElement;
+    editingItemId = id;
+
+    document.getElementById("item-name").value = item.name;
+    document.getElementById("name-error").classList.remove("show");
+    document.getElementById("colour-hint").classList.remove("show");
+    newItemDraft = { category: item.category, colour: item.colour, style: item.style };
+    newItemPhotoBlob = item.image || null;
+    colourManuallySet = false;
+    var drop = document.getElementById("photo-drop");
+    var oldImg = drop.querySelector("img");
+    if (oldImg) oldImg.remove();
+    drop.classList.toggle("has-photo", !!item.image);
+    if (item.image){
+      var img = document.createElement("img");
+      img.src = getPhotoUrl(item);
+      img.alt = "";
+      drop.insertBefore(img, drop.firstChild);
+    }
+    buildSegmented("category-field", CATEGORIES.filter(function(c){ return c.id !== "all"; }), function(){ return newItemDraft.category; }, function(v){ newItemDraft.category = v; });
+    buildSegmented("style-field", STYLES, function(){ return newItemDraft.style; }, function(v){ newItemDraft.style = v; });
+    buildSwatches();
+
+    setAddModalMode(true);
     document.getElementById("modal-add").classList.add("open");
     setTimeout(function(){ document.getElementById("item-name").focus(); }, 30);
   }
   function closeAddModal(){
     document.getElementById("modal-add").classList.remove("open");
+    editingItemId = null;
     if (lastFocused) lastFocused.focus();
   }
 
   function handlePhotoChange(e){
     var file = e.target.files && e.target.files[0];
     if (!file) return;
-    fileToResizedBlob(file).then(function(blob){
+    fileToResizedBlob(file).then(function(result){
+      var blob = result.blob, colourGuess = result.colourGuess;
       newItemPhotoBlob = blob;
       var drop = document.getElementById("photo-drop");
       var oldImg = drop.querySelector("img");
@@ -1158,6 +1333,12 @@
       img.alt = "";
       drop.insertBefore(img, drop.firstChild);
       drop.classList.add("has-photo");
+
+      if (colourGuess && !colourManuallySet){
+        newItemDraft.colour = colourGuess;
+        buildSwatches();
+        document.getElementById("colour-hint").classList.add("show");
+      }
     }).catch(function(){
       showToast("Couldn't use that photo — try a JPG or PNG.");
     });
@@ -1172,6 +1353,37 @@
       nameInput.focus();
       return;
     }
+
+    if (editingItemId){
+      var existing = state.items.find(function(i){ return i.id === editingItemId; });
+      if (!existing){ closeAddModal(); return; }
+      var updated = {
+        id: existing.id,
+        name: name,
+        image: newItemPhotoBlob,
+        category: newItemDraft.category,
+        colour: newItemDraft.colour,
+        style: newItemDraft.style,
+        createdAt: existing.createdAt
+      };
+      idbPut("items", updated).then(function(){
+        var idx = state.items.findIndex(function(i){ return i.id === existing.id; });
+        if (idx !== -1) state.items[idx] = updated;
+        releasePhotoUrl(existing.id); // force a fresh object URL from the (possibly new) photo
+        SLOT_ORDER.forEach(function(cat){
+          if (state.outfit[cat] && state.outfit[cat].id === updated.id) state.outfit[cat] = updated;
+        });
+        closeAddModal();
+        showToast('Saved changes to "' + updated.name + '".');
+        renderWardrobe(); renderHome();
+        if (state.route === "build") renderBuilder();
+      }).catch(function(err){
+        console.error("FitKit: failed to update item", err);
+        showToast("Couldn't save changes — try again.");
+      });
+      return;
+    }
+
     var item = {
       id: genId("item"),
       name: name,
@@ -1197,15 +1409,16 @@
   var SLOT_ORDER = ["top","layer","bottom","shoes","accessory"];
   function stageTileHtml(cat){
     var item = state.outfit[cat];
-    var tag = cat === "acc" ? "accessory" : cat;
     if (!item){
       return '<div class="stage-tile empty' + (cat === "accessory" ? " acc" : "") + '" data-action="focus-picker" data-cat="' + cat + '">' +
         '<svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg><span>' + CATEGORY_LABEL[cat] + '</span></div>';
     }
     var url = getPhotoUrl(item);
     var photoHtml = url ? '<img src="' + url + '" alt="' + escapeHtml(item.name) + '">' : fallbackSwatch(item, "fallback-fill");
+    var locked = !!state.locked[cat];
+    var lockIcon = locked ? '<svg viewBox="0 0 24 24"><use href="#icon-lock"/></svg>' : "";
     return '<div class="stage-tile' + (cat === "accessory" ? " acc" : "") + '">' + photoHtml +
-      '<span class="tile-tag">' + escapeHtml(item.name) + '</span>' +
+      '<span class="tile-tag' + (locked ? " is-locked" : "") + '" title="' + (locked ? "You picked this — Generate won’t change it" : "Generated for you") + '">' + lockIcon + escapeHtml(item.name) + '</span>' +
       '<button class="tile-remove" data-action="remove-slot" data-cat="' + cat + '" aria-label="Remove ' + escapeHtml(item.name) + '"><svg viewBox="0 0 24 24"><use href="#icon-close"/></svg></button>' +
       '</div>';
   }
@@ -1231,7 +1444,7 @@
         '<div class="match-ring-inner"><span class="v">' + (score === null ? "—" : score + "%") + '</span><span class="u">Match</span></div>' +
       '</div>' +
       '<div><div class="match-label">' + matchLabel(score) + '</div>' +
-      (Object.values(state.outfit).every(function(v){return !v;}) ? '<p class="match-sub">Pick a piece from your wardrobe and we\'ll help fill in the gaps &mdash; there\'s no right order.</p>' : '') +
+      (Object.values(state.outfit).every(function(v){return !v;}) ? '<p class="match-sub">Pick a vibe and hit Generate &mdash; or add a specific piece below first and we\'ll build around it.</p>' : '') +
       '</div>' +
       '<div class="stage-grid">' + SLOT_ORDER.map(stageTileHtml).join("") + '</div>' +
       noteHtml;
@@ -1310,26 +1523,111 @@
     if (!item) return;
     var prev = state.outfit[item.category];
     state.outfit[item.category] = item;
-    showToast(prev ? 'Swapped "' + prev.name + '" for "' + item.name + '".' : 'Added "' + item.name + '".');
+    state.locked[item.category] = true;
+    showToast(prev ? 'Swapped "' + prev.name + '" for "' + item.name + '".' : 'Building around "' + item.name + '".');
     renderBuilder();
   }
   function removeFromOutfit(cat){
     var item = state.outfit[cat];
     state.outfit[cat] = null;
+    state.locked[cat] = false;
     if (item) showToast('Removed "' + item.name + '".');
     renderBuilder();
   }
   function clearOutfit(){
     state.outfit = { top:null, layer:null, bottom:null, shoes:null, accessory:null };
+    state.locked = { top:false, layer:false, bottom:false, shoes:false, accessory:false };
+    state.hasGenerated = false;
     showToast("Outfit cleared.");
     renderBuilder();
   }
+
+  /* ============ Outfit generation ============ */
+  function weightedPick(scored){
+    if (scored.length === 0) return null;
+    var shortlist = scored.slice().sort(function(a, b){ return b.score - a.score; }).slice(0, 4);
+    var totalWeight = shortlist.reduce(function(sum, c){ return sum + c.score + 1; }, 0);
+    var r = Math.random() * totalWeight;
+    for (var i = 0; i < shortlist.length; i++){
+      r -= (shortlist[i].score + 1);
+      if (r <= 0) return shortlist[i].item;
+    }
+    return shortlist[shortlist.length - 1].item;
+  }
+  function candidatesForGen(category, excludeIds){
+    return state.items.filter(function(i){ return i.category === category && excludeIds.indexOf(i.id) === -1; })
+      .map(function(i){ return { item: i, score: scoreCandidate(i, state.outfit, state.stylePreference, state.colourPreference) }; });
+  }
+  function updateGenerateButton(){
+    document.getElementById("generate-btn").disabled = state.items.length === 0 || !state.vibe;
+  }
+  function renderVibeChips(){
+    var el = document.getElementById("vibe-field");
+    el.innerHTML = "";
+    STYLES.forEach(function(s){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = s.label;
+      btn.setAttribute("aria-pressed", String(s.id === state.vibe));
+      btn.addEventListener("click", function(){
+        state.vibe = s.id;
+        state.stylePreference = s.pos;
+        renderVibeChips();
+        renderPicker();
+        updateGenerateButton();
+      });
+      el.appendChild(btn);
+    });
+  }
+  function generateOutfit(){
+    if (!state.vibe){ showToast("Pick a vibe first."); return; }
+    var lockedIds = SLOT_ORDER.filter(function(c){ return state.locked[c] && state.outfit[c]; }).map(function(c){ return state.outfit[c].id; });
+
+    if (!state.locked.top && !state.locked.layer){
+      state.outfit.top = null;
+      state.outfit.layer = null;
+      var topPool = candidatesForGen("top", lockedIds);
+      var layerPool = candidatesForGen("layer", lockedIds);
+      if (topPool.length || layerPool.length){
+        var useTop = topPool.length && (!layerPool.length || Math.random() < 0.7);
+        var primary = useTop ? weightedPick(topPool) : weightedPick(layerPool);
+        state.outfit[useTop ? "top" : "layer"] = primary;
+        if (useTop && Math.random() < 0.35){
+          var layerPool2 = candidatesForGen("layer", lockedIds.concat([primary.id]));
+          if (layerPool2.length) state.outfit.layer = weightedPick(layerPool2);
+        }
+      }
+    }
+    ["bottom", "shoes"].forEach(function(cat){
+      if (state.locked[cat]) return;
+      var prevId = state.outfit[cat] ? state.outfit[cat].id : null;
+      var exclude = prevId ? lockedIds.concat([prevId]) : lockedIds;
+      var pool = candidatesForGen(cat, exclude);
+      if (!pool.length && prevId) pool = candidatesForGen(cat, lockedIds);
+      state.outfit[cat] = pool.length ? weightedPick(pool) : null;
+    });
+    if (!state.locked.accessory){
+      var prevAccId = state.outfit.accessory ? state.outfit.accessory.id : null;
+      var accPool = candidatesForGen("accessory", prevAccId ? lockedIds.concat([prevAccId]) : lockedIds);
+      state.outfit.accessory = (accPool.length && Math.random() < 0.55) ? weightedPick(accPool) : null;
+    }
+
+    showToast(state.hasGenerated ? "Here's another one." : "Generated an outfit for you.");
+    state.hasGenerated = true;
+    renderBuilder();
+  }
+
   function renderBuilder(){
-    document.getElementById("style-slider").value = state.stylePreference;
+    renderVibeChips();
     document.getElementById("colour-slider").value = state.colourPreference;
-    document.getElementById("style-val").textContent = state.stylePreference;
     document.getElementById("colour-val").textContent = state.colourPreference;
-    document.getElementById("controls-note").style.display = state.items.length === 0 ? "block" : "none";
+    var anyItems = state.items.length > 0;
+    updateGenerateButton();
+    document.getElementById("generate-btn").innerHTML = '<svg viewBox="0 0 24 24"><use href="#icon-shuffle"/></svg>' +
+      (state.hasGenerated ? "Regenerate" : "Generate outfit");
+    document.getElementById("controls-note").textContent = anyItems
+      ? "Pieces you pick yourself stay put when you regenerate — everything else reshuffles."
+      : "Add a few wardrobe pieces first, then come back here to generate outfits.";
     renderStage();
     renderPicker();
   }
@@ -1439,6 +1737,7 @@
     document.getElementById("save-modal-close").addEventListener("click", closeSaveModal);
     document.getElementById("save-outfit-form").addEventListener("submit", submitSaveOutfit);
     document.getElementById("clear-outfit-btn").addEventListener("click", clearOutfit);
+    document.getElementById("generate-btn").addEventListener("click", generateOutfit);
 
     document.querySelectorAll(".modal-overlay").forEach(function(overlay){
       overlay.addEventListener("click", function(e){ if (e.target === overlay) overlay.classList.remove("open"); });
@@ -1447,13 +1746,7 @@
       if (e.key === "Escape") document.querySelectorAll(".modal-overlay.open").forEach(function(o){ o.classList.remove("open"); });
     });
 
-    var styleSlider = document.getElementById("style-slider");
     var colourSlider = document.getElementById("colour-slider");
-    styleSlider.addEventListener("input", function(){
-      state.stylePreference = Number(styleSlider.value);
-      document.getElementById("style-val").textContent = styleSlider.value;
-      renderStage(); renderPicker();
-    });
     colourSlider.addEventListener("input", function(){
       state.colourPreference = Number(colourSlider.value);
       document.getElementById("colour-val").textContent = colourSlider.value;
@@ -1472,5 +1765,6 @@
   document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
+
 </body>
 </html>
